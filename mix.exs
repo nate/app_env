@@ -8,8 +8,11 @@ defmodule AppEnv.MixProject do
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
       deps: deps(),
-      package: package()
+      name: "AppEnv",
+      source_url: "https://github.com/nate/app_env"
     ]
   end
 
@@ -21,6 +24,10 @@ defmodule AppEnv.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [{:ex_doc, "~> 0.19", only: :dev}]
+  end
+
+  defp description do
+    "A way to copy environment variables into the Application config at startup in an Elixir app."
   end
 
   defp package do
