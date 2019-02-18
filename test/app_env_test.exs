@@ -11,24 +11,37 @@ defmodule AppEnvTest do
     assert Application.get_env(:app_env, :config) == %{"foo" => "bar"}
   end
 
-  test "accepts a new value" do
+  test "copies a new value" do
     :ok = AppEnv.copy("FOO", :app_env, :config)
     assert Application.get_env(:app_env, :config) == "1"
   end
 
-  test "accepts a new value with a custom merge function" do
+  test "copies a new value with a custom merge function" do
     :ok =
       AppEnv.copy("FOO", :app_env, :config, fn old_value, env_value ->
-        case Integer.parse(env_value) do
-          {new_value, _} -> {:ok, Map.put(old_value, "foo", new_value)}
-          :error -> {:error, "unable to parse as integer"}
-        end
+        {new_value, _} = Integer.parse(env_value)
+        {:ok, Map.put(old_value, "foo", new_value)}
       end)
 
     assert Application.get_env(:app_env, :config) == %{"foo" => 1}
   end
 
-  test "handles errors" do
+  test "copies a new value to a path" do
+    :ok = AppEnv.copy_to("FOO", :app_env, :config, ["foo"])
+    assert Application.get_env(:app_env, :config) == %{"foo" => "1"}
+  end
+
+  test "copies a new value to a path with a custom format function" do
+    :ok =
+      AppEnv.copy_to("FOO", :app_env, :config, ["foo"], fn env_value ->
+        {new_value, _} = Integer.parse(env_value)
+        {:ok, new_value}
+      end)
+
+    assert Application.get_env(:app_env, :config) == %{"foo" => 1}
+  end
+
+  test "handles errors in copying" do
     {:error, "error doing things"} =
       AppEnv.copy("FOO", :app_env, :config, fn _old_value, _env_value ->
         "error doing things"
@@ -36,6 +49,14 @@ defmodule AppEnvTest do
 
     {:error, "another error doing things"} =
       AppEnv.copy("FOO", :app_env, :config, fn _old_value, _env_value ->
+        {:error, "another error doing things"}
+      end)
+
+    {:error, "error doing things"} =
+      AppEnv.copy_to("FOO", :app_env, :config, ["foo"], fn _env_value -> "error doing things" end)
+
+    {:error, "another error doing things"} =
+      AppEnv.copy_to("FOO", :app_env, :config, ["foo"], fn _env_value ->
         {:error, "another error doing things"}
       end)
   end
