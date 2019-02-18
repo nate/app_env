@@ -24,10 +24,17 @@ defmodule AppEnv do
          {:old_value, old_value} <- {:old_value, Application.get_env(app_name, config_key)} do
       Application.put_env(app_name, config_key, put_in(old_value, path, new_value))
     else
-      {:env_value, nil} -> :ok
-      {:old_value, nil} -> :ok
-      {:format, {:error, error}} -> {:error, error}
-      {:format, error} -> {:error, error}
+      {:env_value, nil} ->
+        :ok
+
+      {:format, {:error, error}} ->
+        {:error, error}
+
+      {:format, error} ->
+        {:error, error}
+
+      {:old_value, nil} ->
+        :ok
     end
   end
 
